@@ -1,0 +1,44 @@
+stage: ${env.STAGE}
+name: ${env.REPO}
+
+domain:
+  dev: ['dev', codattest.com]
+  prod: codattest.com
+
+url:
+  dev: https://dev.codattest.com 
+  prod: https://www.codattest.com
+
+serverless:
+  component: '@sls-next/serverless-component@3.1.0'
+  inputs:
+    useServerlessTraceTarget: true
+    publicDirectoryCache: false
+    bucketName: ${name}-${stage}
+    domain: ${domain.${stage}}
+    timeout: 30 # 1-30
+    memory: # 128-10240
+      defaultLambda: 384 #384 got err
+      apiLambda: 448 #448 got err
+      imageLambda: 384 #384
+    name:
+      defaultLambda: ${name}-${stage}-default
+      apiLambda: ${name}-${stage}-api
+      imageLambda: ${name}-${stage}-image
+    build:
+      env:
+        MONGODB_URI: ${env.MONGODB_URI}
+        NEXT_PUBLIC_NEXTAUTH_URL: ${url.${stage}}
+        NEXTAUTH_SECRET: ${env.NEXTAUTH_SECRET}
+        NEXT_PUBLIC_STAGE: ${stage}
+        NEXT_PUBLIC_STRIPE_PK: ${env.NEXT_PUBLIC_STRIPE_PK}
+        JWT_SIGNING_PK: ${env.JWT_SIGNING_PK}
+        RECAPTCHA_SK: ${env.RECAPTCHA_SK}
+        BUILD_ID: ${env.BUILD_ID}
+        NODE_ENV: production
+    # cloudfront:
+    #   distributionId: EIWEPBSNER5B3
+    #   # aliases: ["${alias.${stage}}.codattest.com"]
+    #   defaults:
+    #     forward:
+    #       headers: [ Accept ] # Needed for image optimizer
